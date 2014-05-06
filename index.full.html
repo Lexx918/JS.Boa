@@ -1,0 +1,142 @@
+<script>
+xs = 30, // total cols
+ys = 15, // total rows
+l =      // body length
+v =      // view: 0,1,2,3 - left,top,right,bottom
+g =      // food or purgen index in head place
+B =      // body [[xN, yN], .., [x3,y3], [x2,y2], [x1,y1]], x1,y1 - head
+t =      // timer
+S =      // speed (rendering interval)
+P =      // profit
+F =      // array of food "F", [[x1,y1], .., [xN,yN]]
+N =      // array of purgen "p" (phenolphthalein), [[x1,y1], .., [xN,yN]]
+d =      // bool flag "render"
+r = 0    // bool flag "run"
+;
+
+function go(){
+    r = 1,
+    B = [[1,7], [2,7], [3,7], [4,7]],
+    l = 4,
+    F = [],
+    N = [],
+    v = 2,
+    P = 0,
+    S = 300,
+    t = setInterval(step, S);
+}
+function step(){
+    if (!d++) {
+        // current head
+        H = B[l - 1];
+        // new head after move
+        n = [
+            // H[0] + (v == 2 ? 1 : 0) - (v == 0 ? 1 : 0),
+            H[0] + (v == 2 ? 1 : !v ? -1 : 0),
+            // H[1] + (v == 3 ? 1 : 0) - (v == 1 ? 1 : 0)
+            H[1] + (v == 3 ? 1 : v == 1 ? -1 : 0)
+        ];
+        if (n[0] < 0 || n[0] == xs || n[1] < 0 || n[1] == ys || inArray(n, B)) {
+            clearInterval(t);
+            d = r = 0;
+            alert(":(");
+            return;
+        }
+        B.push(n);
+        l++;
+
+        if (g = inArray(n, F)) {
+            P++;
+            S -= 8;
+            F.splice(g - 1, 1);
+        } else if (g = inArray(n, N)) {
+            S += 30;
+            N.splice(g - 1, 1);
+            if (l > 20) {
+                l -= ~~(l/4);
+                B = B.slice(-l);
+            }
+        } else {
+            B.shift();
+            l--;
+        }
+        if (g) {
+            clearInterval(t);
+            t = setInterval(step, S);
+        }
+
+        // add new food
+        if (!F.length || rnd(12) == 5) {
+            add(F);
+        }
+        // add new purgen
+        if (l > 18 && rnd(25+N.length) == 5) {
+            add(N);
+        }
+
+        c = ""; // new fields content
+        for (y = 0; y < ys; y++) { // rows
+            for (x = 0; x < xs; x++) { // cols
+                p = [x, y]; // point
+                c += inArray(p, B) ? "O" : inArray(p, F) ? "F" : inArray(p, N) ? "p" : "&middot;";
+            }
+            c += "\n";
+        }
+        c += P+"\n"+l+" g\n"+(1000 - S)+" cm/min";
+        E.innerHTML = c;
+
+        d = 0;
+    }
+}
+
+// return 0 - not found, else item index + 1,
+function inArray(
+    a, // point, [x,y]
+    b  // array of points [[x1,y1], [x2,y2], .., [xN,yN]]
+){
+    // for all items of array
+    for (i = b.length; i--;) {
+        // eq.: point[0] == points[i][0] && point[1] == points[i][1]
+        if (""+a == ""+b[i]) {
+            break;
+        }
+    }
+    return i + 1;
+}
+
+function add(
+    a // array to add new object
+){
+    o = rnd(ys*xs - 1 - l - F.length - N.length); // offset to new object
+    s = 0; // skipped empty points
+    for (x = xs; x--;) { // cols
+        for (y = ys; y--;) { // rows
+            p = [x, y]; // point
+            if (!inArray(p, B.concat(F, N))) {
+                s == o && a.push(p); // if skipped == offset then push
+                s++;
+            }
+        }
+    }
+}
+// random from 0 to max
+function rnd(max){
+    return ~~(Math.random() * ++max);
+}
+onkeyup = function(e){
+    if (!r) {
+        go();
+    }
+    w = e.which % 37 % 4; // new view, 37(left) -> 0, 38(top) -> 1, 39(right) -> 2, 40(bottom) -> 3
+    /**
+     * eq.:
+     * v == 0 && w != 2 ||
+     * v == 1 && w != 3 ||
+     * v == 2 && w != 0 ||
+     * v == 3 && w != 1
+     */
+    if (((v + 2) % 4) ^ w) {
+        v = w;
+    }
+};
+</script><body><pre id=E>Use the arrow keys
