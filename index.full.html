@@ -96,11 +96,11 @@ function inArray(
     // for all items of array
     for (i = b.length; i--;) {
         // eq.: point[0] == points[i][0] && point[1] == points[i][1]
-        if (""+a == ""+b[i]) {
+        if (""+a == b[i]) {
             break;
         }
     }
-    return i + 1;
+    return ++i;
 }
 
 function add(
