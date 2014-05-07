@@ -36,7 +36,7 @@ function step(){
             // H[1] + (v == 3 ? 1 : 0) - (v == 1 ? 1 : 0)
             H[1] + (v == 3 ? 1 : v == 1 ? -1 : 0)
         ];
-        if (n[0] < 0 || n[0] == xs || n[1] < 0 || n[1] == ys || inArray(n, B)) {
+        if (n[0] < 0 | n[0] == xs | n[1] < 0 | n[1] == ys || inArray(n, B)) {
             clearInterval(t);
             d = r = 0;
             alert(":(");
@@ -53,12 +53,11 @@ function step(){
             S += 30;
             N.splice(g - 1, 1);
             if (l > 20) {
-                l -= ~~(l/4);
+                l -= l >> 2;
                 B = B.slice(-l);
             }
         } else {
-            B.shift();
-            l--;
+            B.shift(l--);
         }
         if (g) {
             clearInterval(t);
@@ -78,7 +77,7 @@ function step(){
         for (y = 0; y < ys; y++) { // rows
             for (x = 0; x < xs; x++) { // cols
                 p = [x, y]; // point
-                c += inArray(p, B) ? "O" : inArray(p, F) ? "F" : inArray(p, N) ? "p" : "&middot;";
+                c += inArray(p, B) ? "O" : inArray(p, F) ? "F" : inArray(p, N) ? "p" : "\xB7"; // \xB7 -> &middot;
             }
             c += "\n";
         }
@@ -113,15 +112,16 @@ function add(
         for (y = ys; y--;) { // rows
             p = [x, y]; // point
             if (!inArray(p, B.concat(F, N))) {
-                s == o && a.push(p); // if skipped == offset then push
-                s++;
+                if (s++ == o) {
+                    a.push(p);
+                }
             }
         }
     }
 }
 // random from 0 to max
 function rnd(max){
-    return ~~(Math.random() * ++max);
+    return Math.random() * ++max | 0;
 }
 onkeyup = function(e){
     if (!r) {
